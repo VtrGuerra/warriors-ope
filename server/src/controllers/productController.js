@@ -136,8 +136,11 @@ exports.getProductByField = (req, res) => {
   if (name === 'name') {
     search[name] = { $regex: new RegExp(`.*${value}.*`, 'i') }
   }
+  if (name === 'productId') {
+    search[name] = { $regex: new RegExp(`.*${value}.*`, 'i') }
+  }
 
-  Product.find({ ...search, /*user: _id*/ })
+  Product.find({ ...search /*user: _id*/ })
     .select('productId name description category')
     .limit(7)
     .exec((err, products) => {

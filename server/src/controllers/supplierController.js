@@ -202,11 +202,16 @@ exports.getSupplierByField = (req, res) => {
   if (!name || !value) {
     res.status(422).send({ error: 'You must provide the field' })
   }
-  const search = {}
-  search[name] = value
-
   let query = {}
 
+  if (name === 'name' || name === 'socialReason') {
+    query = {
+      $or: [
+        { name: { $regex: new RegExp(`.*${value}.*`, 'i') } },
+        { socialReason: { $regex: new RegExp(`.*${value}.*`, 'i') } },
+      ],
+    }
+  }
   if (name === 'name' || name === 'socialReason') {
     query = {
       $or: [
@@ -224,7 +229,7 @@ exports.getSupplierByField = (req, res) => {
     }
   }
 
-  Supplier.find({...query, /*user: _id*/})
+  Supplier.find({ ...query /*user: _id*/ })
     .select('-user')
     .limit(7)
     .exec((err, suppliers) => {

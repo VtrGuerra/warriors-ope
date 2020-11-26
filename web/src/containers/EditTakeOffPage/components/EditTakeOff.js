@@ -2,7 +2,7 @@ import React, { memo, useState, useEffect } from 'react'
 import { Field, FieldArray } from 'redux-form'
 import { styles } from './styles'
 import ButtonIcon from 'components/Common/ButtonIcon/ButtonIcon'
-import { ArrowBack, Clear} from '@material-ui/icons'
+import { ArrowBack, Clear } from '@material-ui/icons'
 import {
   Grid,
   FormControl,
@@ -74,6 +74,7 @@ function EditTakeOff({
                 component={InputTextField}
                 label="Preço Unitário"
                 className={classes.input}
+                minValue={0}
               />
             </Grid>
             <Grid item>
@@ -83,6 +84,7 @@ function EditTakeOff({
                 component={InputTextField}
                 label="Quantidade"
                 className={classes.input}
+                minValue={0}
               />
             </Grid>
           </Grid>
@@ -136,14 +138,12 @@ function EditTakeOff({
                       <Field
                         component={inputType}
                         label={label}
-                        options={clients.map(
-                          ({ _id, name, socialReason }) => {
-                            return {
-                              value: _id,
-                              name: socialReason ? socialReason : name,
-                            }
-                          },
-                        )}
+                        options={clients.map(({ _id, name, socialReason }) => {
+                          return {
+                            value: _id,
+                            name: socialReason ? socialReason : name,
+                          }
+                        })}
                         name={name}
                         type={type}
                         className={classes[className]}

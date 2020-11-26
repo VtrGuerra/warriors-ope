@@ -26,7 +26,7 @@ function AddTakeOff({
   clients,
   products,
   dispatchAddTakeOff,
-  dispatchGetProducts,
+  dispatchGetStockProducts,
   addTakeOffErrorMessage,
   initialize,
 }) {
@@ -36,7 +36,7 @@ function AddTakeOff({
   const onSubmit = (formValues) => {
     dispatchAddTakeOff(formValues)
   }
-  const renderProducts = ({ fields, meta: { error, submitFailed } }) => {
+  const renderProducts = ({ fields }) => {
     return (
       <>
         <Button
@@ -74,6 +74,7 @@ function AddTakeOff({
                 component={InputTextField}
                 label="Preço Unitário"
                 className={classes.input}
+                minValue={0}
               />
             </Grid>
             <Grid item>
@@ -83,6 +84,7 @@ function AddTakeOff({
                 component={InputTextField}
                 label="Quantidade"
                 className={classes.input}
+                minValue={0}
               />
             </Grid>
           </Grid>
@@ -91,8 +93,10 @@ function AddTakeOff({
     )
   }
   useEffect(() => {
-    initialize({ takeOffId: generateTakeOffId() })
-    dispatchGetProducts()
+    initialize({
+      takeOffId: generateTakeOffId(),
+    })
+    dispatchGetStockProducts()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   useEffect(() => {
@@ -130,14 +134,12 @@ function AddTakeOff({
                       <Field
                         component={inputType}
                         label={label}
-                        options={clients.map(
-                          ({ _id, name, socialReason }) => {
-                            return {
-                              value: _id,
-                              name: socialReason ? socialReason : name,
-                            }
-                          },
-                        )}
+                        options={clients.map(({ _id, name, socialReason }) => {
+                          return {
+                            value: _id,
+                            name: socialReason ? socialReason : name,
+                          }
+                        })}
                         name={name}
                         type={type}
                         className={classes[className]}
@@ -158,7 +160,11 @@ function AddTakeOff({
                   )
                 }
               })}
-              <FieldArray name="products" component={renderProducts} />
+              <FieldArray
+                // validate={validate}
+                name="products"
+                component={renderProducts}
+              />
               <Grid item container justify="center">
                 <Button
                   variant="contained"
@@ -177,7 +183,12 @@ function AddTakeOff({
                 marginTop: '9.5px',
               }}
             >
-              {addTakeOffErrorMessage}
+              {addTakeOffErrorMessage &&
+                addTakeOffErrorMessage.map((error) => (
+                  <>
+                    <p>{error}</p>
+                  </>
+                ))}
             </FormHelperText>
           </FormControl>
         </Grid>

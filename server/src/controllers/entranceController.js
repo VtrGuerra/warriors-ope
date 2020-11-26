@@ -4,12 +4,10 @@ exports.addEntrance = async (req, res) => {
   const { entranceId, products, supplier, formOfPayment } = req.body
   const { user } = req
   if (!entranceId || !supplier || !formOfPayment || products.length === 0) {
-    res
-      .status(422)
-      .send({
-        error:
-          "You must provide the entrance's id, supplier, formOfPayment and products should not be empty",
-      })
+    res.status(422).send({
+      error:
+        "You must provide the entrance's id, supplier, formOfPayment and products should not be empty",
+    })
   }
   // eslint-disable-next-line
   Entrance.findOne({ entranceId }, async (err, existingEntrance) => {
@@ -48,6 +46,7 @@ exports.getEntrances = (req, res) => {
 
   Entrance.find(/*{ user: _id }*/)
     // .select('name')
+    .sort({ date: -1 })
     .exec((err, entrances) => {
       if (err) {
         return res.status(500).send({ message: err.message })
@@ -63,7 +62,9 @@ exports.getEntrancesByField = (req, res) => {
   //     user: { _id },
   //   } = req
   if (!entranceId && !startDate && !endDate && !supplier) {
-    res.status(422).send({ error: 'You must provide at least entranceId or startDate and endDate' })
+    res.status(422).send({
+      error: 'You must provide at least entranceId or startDate and endDate',
+    })
   }
   const search = {}
 
@@ -73,12 +74,12 @@ exports.getEntrancesByField = (req, res) => {
   if (supplier) {
     search.supplier = supplier
   }
-  if(startDate && endDate){
-    search.date = { $gte: new Date(startDate), $lte:new Date(endDate) }
+  if (startDate && endDate) {
+    search.date = { $gte: new Date(startDate), $lte: new Date(endDate) }
   }
-  console.log(search)
 
-  Entrance.find({ ...search, /*user: _id*/ })
+  Entrance.find({ ...search /*user: _id*/ })
+    .sort({ date: -1 })
     .exec((err, entrances) => {
       if (err) {
         return res.status(500).send({ message: err.message })
@@ -102,32 +103,34 @@ exports.editEntrance = (req, res) => {
   const { _id, entranceId, products, supplier, formOfPayment } = req.body
 
   if (!entranceId || !supplier || !formOfPayment || products.length === 0) {
-    res
-      .status(422)
-      .send({
-        error:
-          "You must provide the entrance's id, supplier, formOfPayment and products should not be empty",
-      })
+    res.status(422).send({
+      error:
+        "You must provide the entrance's id, supplier, formOfPayment and products should not be empty",
+    })
   }
-  const totalPrice = () =>{
+  const totalPrice = () => {
     if (products.length === 1) {
-        return products[0].quantity * products[0].unitPrice
+      return products[0].quantity * products[0].unitPrice
+    }
+    return products.reduce((accumulator, currentValue) => {
+      if (typeof accumulator !== 'number') {
+        accumulator = accumulator.unitPrice * accumulator.quantity
       }
-      return products.reduce((accumulator, currentValue) => {
-        if (typeof accumulator !== 'number') {
-          accumulator = accumulator.unitPrice * accumulator.quantity
-        }
-        return accumulator + currentValue.unitPrice * currentValue.quantity
-      })
+      return accumulator + currentValue.unitPrice * currentValue.quantity
+    })
   }
   const entrance = { _id, entranceId, products, supplier, formOfPayment }
-  Entrance.findOneAndUpdate({ _id }, { entranceId, products, supplier, formOfPayment, totalPrice: totalPrice()}, (err) => {
-    if (err) {
-      return res.status(500).send({ message: err.message })
-    }
+  Entrance.findOneAndUpdate(
+    { _id },
+    { entranceId, products, supplier, formOfPayment, totalPrice: totalPrice() },
+    (err) => {
+      if (err) {
+        return res.status(500).send({ message: err.message })
+      }
 
-    return res.send({ entrance })
-  })
+      return res.send({ entrance })
+    },
+  )
 }
 exports.deleteEntrance = (req, res) => {
   const { _id } = req.params
